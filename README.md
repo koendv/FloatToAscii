@@ -1,4 +1,4 @@
-# FloatToAscii - ftoa-fast
+# FloatToAscii
 Fast and small IEEE754-single precision float to string conversion, suitable for embedded systems.
 
 - small. about 2 to 3 kbyte.
@@ -7,11 +7,11 @@ Fast and small IEEE754-single precision float to string conversion, suitable for
 - plain c, no dependencies
 - c++ wrapper for Arduino
 
-## Use
+## use
 
-The library can be used on Arduino and other os's, like Zephyr.
+FloatToAscii can be used as an Arduino library or as plain C code.
 
-### Arduino
+### arduino
 Add the FloatToAscii library to your sketch using the library manager.
 
 ```
@@ -25,8 +25,6 @@ String &FloatToAscii(String &s, float f, int precision = 2);
 - Uses modify-in-place of String _s_ to avoid memory fragmentation.
 - Returns String _s_ with the converted float.
 
-A comparison of FloatToAscii() output, [Arduino print()](extras/doc/comparison-arduino.md) and [linux printf()](extras/doc/comparison-linux.md).
-
 Code:
 
 ```
@@ -35,7 +33,7 @@ String s;
 Serial.print(FloatToAscii(s, f));
 ```
 
-### Other OS
+### plain C
 Copy src/ftoa.h and src/ftoa.c to your project. There are no library dependencies.
 ```
 uint32_t ftoa(char *s, size_t size, float f, int32_t precision);
@@ -58,56 +56,13 @@ printf("%s", s);
 ```
 ftoa() prints fixed point for numbers between 1000000 and 0.0001, scientific format otherwise.
 
-## measurements
+## comparison
 
-This is speed and size of the ftoa() function:
+Various tests:
 
-|core      |processor        |speed  |flash     |
-| -------- | --------------- | ----- | -------- |
-|RISCV     |ESP32-C3 160MHz  |5.6us  |2.0 kbyte |
-|Cortex-M4 |STM32F411 100MHz |6.4us  |1.8 kbyte |
-|Cortex-M3 |STM32F103 72MHz  |13.3us |2.0 kbyte |
-|Cortex-M0 |STM32F072 48MHz  |50.9us |2.8 kbyte |
-
-Speed given is the average time needed for a converting a single float to ascii. Compiled optimizing size.
-The Arduino String version FloatToAscii() is about 4us slower than char* ftoa().
-
-## Comparison with snprintf()
-
-Another way to convert float to string on Arduino uses snprintf(). Code:
-
-```
-  float f = 6.02214076e23f;
-  char s[20];
-  int len = snprintf(s, sizeof(s), "%g", f);
-  Serial.print(s);
-```
-To use less flash, on stm32duino Newlib Nano does not have floating point support by default. On stm32duino, to use snprintf() to printf float and double, choose Tools -> C Runtime Library -> Newlib Nano + Float Printf. This is speed and size in kbyte of snprintf():
-
-|core      |processor        |speed    |flash      |
-| -------- | --------------- | ------- | --------- |
-|RISCV     |ESP32-C3 160MHz  |46.4 us  |17.9 kbyte |
-|Cortex-M4 |STM32F411 100MHz |65.0 us  |8.8 kbyte  |
-|Cortex-M3 |STM32F103 72MHz  |113.8 us |7.9 kbyte  |
-|Cortex-M0 |STM32F072 48MHz  |267.2 us |9.6 kbyte  |
-
-On stm32duino, the size difference corresponds to the difference between choosing Newlib Nano with or without float printf() support.
-
-On ESP32-C3 Arduino prints float and double using snprintf(). Printing a single float or double automatically links in snprintf(), and increases image size.
-
-These measurements indicate FloatToAscii() is faster and smaller than snprintf(). But FloatToAscii only prints a single type - float - while snprintf() prints everything - including float and double - in a large variety of formats.
-
-## stm32duino
-
-Instead of adding a library to your sketch, you can also patch the system libraries.
-
-These are two [patches for stmduino](extras/stm32duino). A patch for print() allows printing floats with exponents; a patch for parseFloat() allows reading floats with exponents.
-
-The code is not specific to stm32duino, the patches are. On other arduinos than stm32duino you'll probably have to add the code by hand.
-
-## testing
-
-```extras/overnight``` checks that after conversion from float to string, calling sscanf() on the string produces the original float.
+- A comparison of FloatToAscii() output and [Arduino print()](extras/doc/comparison-arduino.md).
+- A comparison of FloatToAscii() output and  [linux printf()](extras/doc/comparison-linux.md).
+- A comparison of ftoa() and [snprintf()](extras/doc/speed_comparison.md) speed and code size.
 
 ## credits
 
