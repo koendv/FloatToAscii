@@ -1,0 +1,100 @@
+--- Stream.cpp.ORIG	2023-11-20 10:11:46.947340674 +0100
++++ Stream.cpp	2023-11-22 10:31:21.288693004 +0100
+@@ -23,6 +23,7 @@
+  */
+ 
+ #include "Arduino.h"
++#include <climits>
+ #include "Stream.h"
+ 
+ #define PARSE_TIMEOUT 1000  // default number of milli-seconds to wait
+@@ -163,6 +164,9 @@
+   return value;
+ }
+ 
++static float pos_pow10[] = { 1e1f, 1e2f, 1e4f, 1e8f, 1e16f, 1e32f };
++static float neg_pow10[] = { 1e-1f, 1e-2f, 1e-4f, 1e-8f, 1e-16f, 1e-32f };
++
+ // as parseInt but returns a floating point value
+ float Stream::parseFloat(LookaheadMode lookahead, char ignore)
+ {
+@@ -170,7 +174,9 @@
+   bool isFraction = false;
+   long value = 0;
+   int c;
+-  float fraction = 1.0;
++  bool isNegativeExponent = false;
++  int exponent10 = 0;
++  float fValue = 0.0f;
+ 
+   c = peekNextDigit(lookahead, true);
+   // ignore non numeric leading characters
+@@ -186,23 +192,58 @@
+     } else if (c == '.') {
+       isFraction = true;
+     } else if (c >= '0' && c <= '9')  {   // is c a digit?
+-      value = value * 10 + c - '0';
+-      if (isFraction) {
+-        fraction *= 0.1;
++      if (value < LONG_MAX / 10L - '9') { // overflow?
++        value = value * 10 + c - '0';
++        if (isFraction) {
++          exponent10--;
++        }
++      } else if (!isFraction) {
++        exponent10++;
+       }
+     }
+     read();  // consume the character we got with peek
+     c = timedPeek();
+   } while ((c >= '0' && c <= '9')  || (c == '.' && !isFraction) || c == ignore);
+ 
+-  if (isNegative) {
+-    value = -value;
+-  }
+-  if (isFraction) {
+-    return value * fraction;
+-  } else {
+-    return value;
++  if (c == 'e') {
++    int exponent = 0;
++    read();  // consume 'e'
++    c = timedPeek();
++    do {
++      if (c == ignore || c == '+') {
++        ;  // ignore
++      } else if (c == '-') {
++        isNegativeExponent = true;
++      } else if (c >= '0' && c <= '9') {  // is c a digit?
++        if (exponent < 100) { // exponent overflow?
++          exponent = exponent * 10 + c - '0';
++        }
++      }
++      read();  // consume the character we got with peek
++      c = timedPeek();
++    } while ((c >= '0' && c <= '9') || c == ignore);
++    if (isNegativeExponent) {
++      exponent = -exponent;
++    }
++    exponent10 += exponent;
++  }
++
++  fValue = value;
++  isNegativeExponent = exponent10 < 0;
++  if (isNegativeExponent) exponent10 = -exponent10;
++  // multiply fValue by 10^exponent10
++  for (int i = 0; (exponent10 != 0) && (i < sizeof(pos_pow10) / sizeof(pos_pow10[0])); i++) {
++    if (exponent10 & 0x1)
++      fValue *= (isNegativeExponent ? neg_pow10[i] : pos_pow10[i]);
++    exponent10 >>= 1;
+   }
++  if (exponent10 != 0)
++    fValue = (isNegativeExponent ? 0 : INFINITY);
++
++  if (isNegative)
++    fValue = -fValue;
++
++  return fValue;
+ }
+ 
+ // read characters from stream into buffer

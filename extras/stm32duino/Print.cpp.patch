@@ -1,0 +1,18 @@
+--- Print.cpp.OLD	2023-11-17 19:26:06.494191834 +0100
++++ Print.cpp	2023-11-17 19:28:14.904185846 +0100
+@@ -129,9 +129,14 @@
+   }
+ }
+ 
++#include "ftoa.h"
++
+ size_t Print::print(float n, int digits)
+ {
+-  return printFloat(n, digits);
++  char s[20] = { 0 };
++  ftoa(s, sizeof(s), n, digits);
++  s[sizeof(s) - 1] = 0;
++  return print(s);
+ }
+ 
+ size_t Print::print(double n, int digits)
