@@ -61,7 +61,7 @@ static int k_comp(int n) {
    Scaled so the leftmost bit is 1. */
 
 /* Significands.  */
-static uint64_t powers_ten[84] = {
+static const uint64_t powers_ten[84] = {
     0x881cea14545c7575, 0xaa242499697392d3, 0xd4ad2dbfc3d07788,
     0x84ec3c97da624ab5, 0xa6274bbdd0fadd62, 0xcfb11ead453994ba,
     0x81ceb32c4b43fcf5, 0xa2425ff75e14fc32, 0xcad2f7f5359a3b3e,
@@ -108,7 +108,7 @@ static int16_t powers_ten_e[84] = {
 };
 */
 
-static uint8_t powers_ten_e[84] = {
+static const uint8_t powers_ten_e[84] = {
     127, 124, 121, 117, 114, 111, 107, 104, 101, 98,  94,  91,  88,  84,
     81,  78,  74,  71,  68,  64,  61,  58,  54,  51,  48,  44,  41,  38,
     34,  31,  28,  24,  21,  18,  14,  11,  8,   4,   1,   2,   5,   9,
