@@ -58,12 +58,16 @@ ftoa() prints fixed point for numbers between 1000000 and 0.0001, scientific for
 
 ## comparison
 
-Various tests:
+ftoa() uses the [Grisu algorithm](dtoa-pldi2010.pdf) to convert a float to an ascii string. Various tests:
 
 - A comparison of FloatToAscii() output and [Arduino print()](extras/doc/comparison-arduino.md).
 - A comparison of FloatToAscii() output and  [linux printf()](extras/doc/comparison-linux.md).
 - A comparison of ftoa() and [snprintf()](extras/doc/speed_comparison.md) speed and code size.
 
+The Grisu algorithm to print floats looks like something you could implement in an fpga.
+
 ## credits
 
-[Florian Loitsch](https://florian.loitsch.com/) proposed the [Grisu algorithm](dtoa-pldi2010.pdf) and wrote the [double-precision dtoa()](https://github.com/google/double-conversion) version.  I would like to thank Florian Loitsch for his helpful comments. Peter Barfuss converted dtoa() to 32-bit [single-precision ftoa()](https://github.com/bofh453/ftoa-fast).
+[Florian Loitsch](https://florian.loitsch.com/) proposed the [Grisu algorithm](dtoa-pldi2010.pdf) and wrote the [double-precision dtoa()](https://github.com/google/double-conversion) version.
+Peter Barfuss converted dtoa() to 32-bit [single-precision ftoa()](https://github.com/bofh453/ftoa-fast).
+I would like to thank Florian Loitsch for his helpful comments.
